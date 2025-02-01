@@ -1,175 +1,158 @@
-# API Response Language Switch
+```markdown
+# API Response Language Switch Example
 
-This Django project provides API responses with **dynamic language translation**, supporting:
-- **Custom Translations** stored in the database
-- **LLM-Based Translations** (OpenAI, Claude, Mistral, Llama)
-- **Field-Specific Translation** for selective API fields
+A Django REST Framework project demonstrating URL-based language switching for API responses.
 
-## 🚀 Features
-✅ **Dynamic language translation** via `lang` query param  
-✅ **Supports multiple LLM providers** (`openai`, `anthropic`, `mistral`, `llama`)  
-✅ **Custom translations API** to store user-defined translations  
-✅ **Bulk import translations via command**  
-✅ **Django REST Framework (DRF) API**  
+## Features
+- URL-based language switching (`/en/`, `/fr/`, `/es/`)
+- Django built-in translation system
+- Translatable API responses
+- Language-specific endpoints
 
----
+## Setup
 
-## 🛠️ Setup Instructions
-
-### **1. Clone the Repository**
+### 1. System Requirements
+Ubuntu/Debian:
 ```bash
-git clone https://github.com/your-repo/api-response-language-switch-example.git
-cd api-response-language-switch-example
+sudo apt-get update
+sudo apt-get install gettext python3.13 python3.13-venv
 ```
 
-### **2. Create & Activate a Virtual Environment**
+### 2. Project Setup
 ```bash
-python -m venv venv
-source venv/bin/activate  # Mac/Linux
-venv\Scripts\activate     # Windows
-```
+# Clone repository
+git clone <repository-url>
+cd django-api-translation
 
-### **3. Install Dependencies**
-```bash
+# Create virtual environment
+python3.13 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### **4. Configure `.env` File**
-Create a `.env` file in the root directory and add:
+### 3. Environment Configuration
+Create 
+
+.env
+
+ file:
 ```ini
-DEBUG=True
-SECRET_KEY=your_secret_key
+DJANGO_SECRET_KEY='your-secret-key'
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Database Config (SQLite / PostgreSQL)
-DATABASE_URL=sqlite:///db.sqlite3
-
-# LLM API Keys
-OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
-MISTRAL_API_KEY=your_mistral_api_key
-LLAMA_API_KEY=your_llama_api_key
+DB_ENGINE=django.db.backends.sqlite3
+DB_NAME=db.sqlite3
 ```
 
-### **5. Run Migrations**
+### 4. Translation Setup
+
+Create translation files:
+```bash
+# Generate message files
+python manage.py makemessages -l en
+python manage.py makemessages -l fr
+python manage.py makemessages -l es
+
+# After editing .po files, compile
+python manage.py compilemessages
+```
+
+Example translation file (`locale/fr/LC_MESSAGES/django.po`):
+```po
+msgid "Welcome to our platform"
+msgstr "Bienvenue sur notre plateforme"
+
+msgid "Operation successful"
+msgstr "Opération réussie"
+```
+
+### 5. Database Setup
 ```bash
 python manage.py migrate
-```
-
-### **6. Create a Superuser**
-```bash
 python manage.py createsuperuser
 ```
 
-### **7. Start the Server**
+## API Usage
+
+### Access Endpoints with Language Prefixes
+
 ```bash
-python manage.py runserver
-```
-> **API will be available at**: `http://127.0.0.1:8000/api/example-app/v1/`
+# English endpoint
+curl http://localhost:8000/en/api/v1/example/
 
----
+# French endpoint
+curl http://localhost:8000/fr/api/v1/example/
 
-## 🔥 API Endpoints
-
-### **1. Add Custom Translations**
-#### 📌 **Endpoint:** `POST /api/example-app/v1/translations/`
-```json
-{
-    "key": "welcome",
-    "language": "fr",
-    "message": "Bienvenue"
-}
-```
-**cURL Command**
-```bash
-curl -X POST http://127.0.0.1:8000/api/example-app/v1/translations/ \
-     -H "Content-Type: application/json" \
-     -d '{"key": "welcome", "language": "fr", "message": "Bienvenue"}'
+# Spanish endpoint
+curl http://localhost:8000/es/api/v1/example/
 ```
 
----
-
-### **2. Get API Response with Translation**
-#### 📌 **Endpoint:** `GET /api/example-app/v1/example-endpoint/?lang=fr&llm_provider=openai`
-```bash
-curl -X GET "http://127.0.0.1:8000/api/example-app/v1/example-endpoint/?lang=fr&llm_provider=openai"
-```
-📌 **Response (French Translation)**
+Example Response:
 ```json
 {
     "success": true,
     "statusCode": 200,
     "message": "Opération réussie",
     "data": {
-        "title": "Bienvenue sur notre plateforme",
-        "description": "Ceci est une description de démonstration"
+        "title": "Bienvenue sur notre plateforme"
     }
 }
 ```
 
----
-
-### **3. Import Bulk Translations from JSON**
-#### 📌 **Run the following command to import translations**
-```bash
-python manage.py load_translations translations.json
+## Project Structure
 ```
-✅ **Example `translations.json`**
-```json
-[
-    {"key": "welcome", "language": "fr", "message": "Bienvenue"},
-    {"key": "success", "language": "es", "message": "Éxito"}
+django-api-translation/
+├── config/
+│   ├── settings.py      # Django settings with i18n config
+│   └── urls.py          # URL patterns with i18n_patterns
+├── apps/
+│   └── example_app/
+│       ├── api/
+│       │   └── v1/
+│       │       ├── views.py    # API views with translations
+│       │       └── urls.py     # API URLs
+│       └── models.py
+├── locale/              # Translation files
+│   ├── en/
+│   ├── fr/
+│   └── es/
+└── manage.py
+```
+
+## Managing Translations
+
+### Add New Language
+1. Generate messages:
+```bash
+python manage.py makemessages -l <lang_code>
+```
+
+2. Update settings.py:
+```python
+LANGUAGES = [
+    ('en', 'English'),
+    ('fr', 'French'),
+    ('es', 'Spanish'),
+    ('de', 'German'),  # New language
 ]
 ```
 
----
-
-### **4. Use Other LLM Providers for Translation**
-You can dynamically select **OpenAI, Anthropic (Claude), Mistral, or Llama**.
-
-#### **Using Mistral**
+3. Compile messages:
 ```bash
-curl -X GET "http://127.0.0.1:8000/api/example-app/v1/example-endpoint/?lang=de&llm_provider=mistral"
+python manage.py compilemessages
 ```
 
-#### **Using Claude**
+### Development
 ```bash
-curl -X GET "http://127.0.0.1:8000/api/example-app/v1/example-endpoint/?lang=es&llm_provider=anthropic"
+python manage.py runserver
 ```
 
----
+Visit: http://localhost:8000/en/api/v1/example/
 
-## 📂 Project Structure
-```
-api-response-language-switch-example/
-│── config/                     # Django project configuration
-│── apps/example_app/           # Main app containing API views
-│   ├── api/v1/                 # API versioning
-│   │   ├── urls.py             # API v1 routes
-│   │   ├── views.py            # API logic
-│   ├── middleware.py           # Translation middleware
-│   ├── models.py               # Database models (Translation)
-│   ├── serializers.py          # DRF serializers
-│   ├── utils/                  # Utility functions
-│   │   ├── response_formatter.py  # Response formatting with translation
-│   │   ├── llm_service.py      # LLM translation service
-│── requirements.txt            # Dependencies
-│── manage.py                   # Django entry point
-│── README.md                   # Documentation
-│── .env                        # Environment variables
-```
-
----
-
-## 🛠️ **Development & Debugging**
-### **Run Server in Debug Mode**
-```bash
-python manage.py runserver --settings=config.settings.dev
-```
-
----
-
-## 🚀 **Contributing**
-We welcome contributions! Feel free to submit issues, feature requests, or pull requests.
-
----
-
+## Contributing
+1. Fork repository
+2. Create feature branch
+3. Submit pull request

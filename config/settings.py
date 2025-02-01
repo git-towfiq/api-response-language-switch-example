@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -66,6 +67,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -127,7 +129,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# Language settings
+LANGUAGE_CODE = 'en'
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('French')),
+    ('es', _('Spanish')),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
 
 TIME_ZONE = 'UTC'
 
@@ -144,31 +156,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-LLM_PROVIDERS = {
-    "openai": {
-        "api_key": os.getenv('OPENAI_API_KEY'),
-        "model": "gpt-4o"
-    },
-    # "anthropic": {  # Claude API
-    #     "api_key": "your_anthropic_api_key",
-    #     "model": "claude-3"
-    # },
-    # "mistral": {  # Mistral API
-    #     "api_key": "your_mistral_api_key",
-    #     "model": "mistral-7b"
-    # },
-    # "llama": {  # Meta's Llama
-    #     "api_key": "your_llama_api_key",
-    #     "model": "llama-3"
-    # }
-}
-
-DEFAULT_LLM = "openai"  # Set a default LLM
-
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-    }
-}
